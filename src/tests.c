@@ -5326,6 +5326,7 @@ void run_ecdsa_openssl(void) {
 # include "modules/recovery/tests_impl.h"
 #endif
 
+<<<<<<< HEAD
 void run_memczero_test(void) {
     unsigned char buf1[6] = {1, 2, 3, 4, 5, 6};
     unsigned char buf2[sizeof(buf1)];
@@ -5495,6 +5496,11 @@ void run_cmov_tests(void) {
     scalar_cmov_test();
     ge_storage_cmov_test();
 }
+=======
+#ifdef ENABLE_MODULE_RANGEPROOF
+# include "modules/rangeproof/tests_impl.h"
+#endif
+>>>>>>> Pedersen commitments, borromean ring signatures, and ZK range proofs.
 
 int main(int argc, char **argv) {
     unsigned char seed16[16] = {0};
@@ -5633,10 +5639,16 @@ int main(int argc, char **argv) {
     run_recovery_tests();
 #endif
 
+<<<<<<< HEAD
     /* util tests */
     run_memczero_test();
 
     run_cmov_tests();
+=======
+#ifdef ENABLE_MODULE_RANGEPROOF
+    run_rangeproof_tests();
+#endif
+>>>>>>> Pedersen commitments, borromean ring signatures, and ZK range proofs.
 
     secp256k1_rand256(run32);
     printf("random run = %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n", run32[0], run32[1], run32[2], run32[3], run32[4], run32[5], run32[6], run32[7], run32[8], run32[9], run32[10], run32[11], run32[12], run32[13], run32[14], run32[15]);
