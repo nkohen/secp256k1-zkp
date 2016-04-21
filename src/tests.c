@@ -5509,6 +5509,10 @@ void run_cmov_tests(void) {
 #endif
 >>>>>>> Pedersen commitments, borromean ring signatures, and ZK range proofs.
 
+#ifdef ENABLE_MODULE_WHITELIST
+# include "modules/whitelist/tests_impl.h"
+#endif
+
 int main(int argc, char **argv) {
     unsigned char seed16[16] = {0};
     unsigned char run32[32] = {0};
@@ -5663,6 +5667,11 @@ int main(int argc, char **argv) {
     run_rangeproof_tests();
 #endif
 >>>>>>> Pedersen commitments, borromean ring signatures, and ZK range proofs.
+
+#ifdef ENABLE_MODULE_WHITELIST
+    /* Key whitelisting tests */
+    run_whitelist_tests();
+#endif
 
     secp256k1_rand256(run32);
     printf("random run = %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n", run32[0], run32[1], run32[2], run32[3], run32[4], run32[5], run32[6], run32[7], run32[8], run32[9], run32[10], run32[11], run32[12], run32[13], run32[14], run32[15]);
