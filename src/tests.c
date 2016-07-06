@@ -5327,6 +5327,7 @@ void run_ecdsa_openssl(void) {
 #endif
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 void run_memczero_test(void) {
     unsigned char buf1[6] = {1, 2, 3, 4, 5, 6};
     unsigned char buf2[sizeof(buf1)];
@@ -5497,6 +5498,12 @@ void run_cmov_tests(void) {
     ge_storage_cmov_test();
 }
 =======
+=======
+#ifdef ENABLE_MODULE_GENERATOR
+# include "modules/generator/tests_impl.h"
+#endif
+
+>>>>>>> Constant-time generator module
 #ifdef ENABLE_MODULE_RANGEPROOF
 # include "modules/rangeproof/tests_impl.h"
 #endif
@@ -5640,11 +5647,18 @@ int main(int argc, char **argv) {
 #endif
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     /* util tests */
     run_memczero_test();
 
     run_cmov_tests();
 =======
+=======
+#ifdef ENABLE_MODULE_GENERATOR
+    run_generator_tests();
+#endif
+
+>>>>>>> Constant-time generator module
 #ifdef ENABLE_MODULE_RANGEPROOF
     run_rangeproof_tests();
 #endif
