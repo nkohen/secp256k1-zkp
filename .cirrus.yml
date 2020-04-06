@@ -22,6 +22,7 @@ env:
   CTIMETEST: yes
   BENCH: yes
   ITERS: 2
+  JNI: no
   MAKEFLAGS: -j2
 
 cat_logs_snippet: &CAT_LOGS
@@ -71,6 +72,7 @@ task:
     - env: {BUILD: distcheck, WITH_VALGRIND: no, CTIMETEST: no, BENCH: no}
     - env: {CPPFLAGS: -DDETERMINISTIC}
     - env: {CFLAGS: -O0, CTIMETEST: no}
+    - env: {BUILD: check-java, JNI: yes, ECDH: yes, EXPERIMENTAL: yes, SCHNORRSIG: yes, ECDSAADAPTOR: yes}
     - env:
         CFLAGS:  "-fsanitize=undefined -fno-omit-frame-pointer"
         LDFLAGS: "-fsanitize=undefined -fno-omit-frame-pointer"
