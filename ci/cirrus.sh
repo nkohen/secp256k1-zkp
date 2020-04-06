@@ -21,7 +21,7 @@ valgrind --version || true
     --enable-module-rangeproof="$RANGEPROOF" --enable-module-whitelist="$WHITELIST" --enable-module-generator="$GENERATOR" \
     --enable-module-schnorrsig="$SCHNORRSIG"  --enable-module-musig="$MUSIG" --enable-module-ecdsa-adaptor="$ECDSAADAPTOR" \
     --with-valgrind="$WITH_VALGRIND" \
-    --host="$HOST" $EXTRAFLAGS
+    --enable-jni="$JNI" --host="$HOST" $EXTRAFLAGS
 
 # We have set "-j<n>" in MAKEFLAGS.
 make

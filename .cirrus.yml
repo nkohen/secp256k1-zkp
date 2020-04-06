@@ -21,6 +21,7 @@ env:
   BENCH: yes
   TEST_ITERS:
   BENCH_ITERS: 2
+  JNI: no
   MAKEFLAGS: -j2
 
 cat_logs_snippet: &CAT_LOGS
@@ -69,6 +70,24 @@ task:
     - env: {BUILD: distcheck, WITH_VALGRIND: no, CTIMETEST: no, BENCH: no}
     - env: {CPPFLAGS: -DDETERMINISTIC}
     - env: {CFLAGS: -O0, CTIMETEST: no}
+    - env: {BUILD: check-java, JNI: yes, ECDH: yes, EXPERIMENTAL: yes, SCHNORRSIG: yes, ECDSAADAPTOR: yes}
+    - env:
+        CFLAGS:  "-fsanitize=undefined -fno-omit-frame-pointer"
+        LDFLAGS: "-fsanitize=undefined -fno-omit-frame-pointer"
+        UBSAN_OPTIONS: "print_stacktrace=1:halt_on_error=1"
+        BIGNUM: no
+        ASM: x86_64
+        ECDH: yes
+        RECOVERY: yes
+        EXPERIMENTAL: yes
+        SCHNORRSIG: yes
+        ECDSA_S2C: yes
+        RANGEPROOF: yes
+        WHITELIST: yes
+        GENERATOR: yes
+        MUSIG: yes
+        ECDSAADAPTOR: yes
+        CTIMETEST: no
     - env: { ECMULTGENPRECISION: 2 }
     - env: { ECMULTGENPRECISION: 8 }
   matrix:
