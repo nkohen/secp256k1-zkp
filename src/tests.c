@@ -129,12 +129,12 @@ void random_scalar_order(secp256k1_scalar *num) {
     } while(1);
 }
 
-<<<<<<< HEAD
 void random_scalar_order_b32(unsigned char *b32) {
     secp256k1_scalar num;
     random_scalar_order(&num);
     secp256k1_scalar_get_b32(b32, &num);
-=======
+}
+
 void run_util_tests(void) {
     int i;
     uint64_t r;
@@ -179,7 +179,6 @@ void run_util_tests(void) {
         CHECK(secp256k1_sign_and_abs64(&r2, s) == (s < 0));
         CHECK(r2 == r);
     }
->>>>>>> Add 64-bit integer utilities
 }
 
 void run_context_tests(int use_prealloc) {
@@ -1119,7 +1118,6 @@ void scalar_test(void) {
 
 }
 
-<<<<<<< HEAD
 void run_scalar_set_b32_seckey_tests(void) {
     unsigned char b32[32];
     secp256k1_scalar s1;
@@ -1135,7 +1133,8 @@ void run_scalar_set_b32_seckey_tests(void) {
     CHECK(secp256k1_scalar_set_b32_seckey(&s2, b32) == 0);
     memset(b32, 0xFF, sizeof(b32));
     CHECK(secp256k1_scalar_set_b32_seckey(&s2, b32) == 0);
-=======
+}
+
 void scalar_chacha_tests(void) {
     /* Test vectors 1 to 4 from https://tools.ietf.org/html/rfc8439#appendix-A
      * Note that scalar_set_b32 and scalar_get_b32 represent integers
@@ -1242,7 +1241,6 @@ void scalar_chacha_tests(void) {
     secp256k1_scalar_set_b32(&exp_r2, &expected5[32], NULL);
     CHECK(secp256k1_scalar_eq(&exp_r1, &r1));
     CHECK(secp256k1_scalar_eq(&exp_r2, &r2));
->>>>>>> add chacha20 function
 }
 
 void run_scalar_tests(void) {
@@ -5445,8 +5443,22 @@ void run_ecdsa_openssl(void) {
 # include "modules/recovery/tests_impl.h"
 #endif
 
-<<<<<<< HEAD
-<<<<<<< HEAD
+#ifdef ENABLE_MODULE_GENERATOR
+# include "modules/generator/tests_impl.h"
+#endif
+
+#ifdef ENABLE_MODULE_RANGEPROOF
+# include "modules/rangeproof/tests_impl.h"
+#endif
+
+#ifdef ENABLE_MODULE_WHITELIST
+# include "modules/whitelist/tests_impl.h"
+#endif
+
+#ifdef ENABLE_MODULE_SURJECTIONPROOF
+# include "modules/surjection/tests_impl.h"
+#endif
+
 void run_memczero_test(void) {
     unsigned char buf1[6] = {1, 2, 3, 4, 5, 6};
     unsigned char buf2[sizeof(buf1)];
@@ -5616,25 +5628,6 @@ void run_cmov_tests(void) {
     scalar_cmov_test();
     ge_storage_cmov_test();
 }
-=======
-=======
-#ifdef ENABLE_MODULE_GENERATOR
-# include "modules/generator/tests_impl.h"
-#endif
-
->>>>>>> Constant-time generator module
-#ifdef ENABLE_MODULE_RANGEPROOF
-# include "modules/rangeproof/tests_impl.h"
-#endif
->>>>>>> Pedersen commitments, borromean ring signatures, and ZK range proofs.
-
-#ifdef ENABLE_MODULE_WHITELIST
-# include "modules/whitelist/tests_impl.h"
-#endif
-
-#ifdef ENABLE_MODULE_SURJECTIONPROOF
-# include "modules/surjection/tests_impl.h"
-#endif
 
 int main(int argc, char **argv) {
     unsigned char seed16[16] = {0};
@@ -5782,23 +5775,13 @@ int main(int argc, char **argv) {
     run_recovery_tests();
 #endif
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    /* util tests */
-    run_memczero_test();
-
-    run_cmov_tests();
-=======
-=======
 #ifdef ENABLE_MODULE_GENERATOR
     run_generator_tests();
 #endif
 
->>>>>>> Constant-time generator module
 #ifdef ENABLE_MODULE_RANGEPROOF
     run_rangeproof_tests();
 #endif
->>>>>>> Pedersen commitments, borromean ring signatures, and ZK range proofs.
 
 #ifdef ENABLE_MODULE_WHITELIST
     /* Key whitelisting tests */
@@ -5808,6 +5791,11 @@ int main(int argc, char **argv) {
 #ifdef ENABLE_MODULE_SURJECTIONPROOF
     run_surjection_tests();
 #endif
+
+    /* util tests */
+    run_memczero_test();
+
+    run_cmov_tests();
 
     secp256k1_rand256(run32);
     printf("random run = %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n", run32[0], run32[1], run32[2], run32[3], run32[4], run32[5], run32[6], run32[7], run32[8], run32[9], run32[10], run32[11], run32[12], run32[13], run32[14], run32[15]);
