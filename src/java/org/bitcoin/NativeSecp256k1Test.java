@@ -190,6 +190,23 @@ public class NativeSecp256k1Test {
     }
 
     /**
+      * This tests public key addition
+      */
+      public static void testPubKeyCombine() throws AssertFailException {
+        byte[] pub1 = toByteArray("023F75B56D0695CA76261F0BCD0B31B11B86D150AADED8D31AAA86561E52622A99");
+        byte[] pub2 = toByteArray("0341981FEC932450DD70F8BE107BA43F902B9F17923E8D2C487F69026E62703FBA");
+        byte[] pub3 = toByteArray("02BF0298EAFAE04E45789BC5C3419BF718AFDBC7951EDEB1BFE4073CEE06B40C20");
+        byte[][] pubs = { pub1, pub2, pub3 };
+        
+        //byte[] resultArr = NativeSecp256k1.pubKeyCombine( pubs , false);
+        //String pubkeyString = toHex(resultArr);
+        byte[] resultArrCompressed = NativeSecp256k1.pubKeyCombine( pubs , true);
+        String pubkeyStringCompressed = toHex(resultArrCompressed);
+        //assertEquals(pubkeyString , "0436456D9DB1ACC4B3DB73CA77AA760D6BF7163A7432A3B1F189FB5C4EC2344A622DBB33694B9F067C48F09ED860AD68D12E5355B08157C985E11AA016944B3E7E" , "testPubKeyCombine");
+        assertEquals(pubkeyStringCompressed , "0236456D9DB1ACC4B3DB73CA77AA760D6BF7163A7432A3B1F189FB5C4EC2344A62" , "testPubKeyCombine (compressed)");
+    }
+
+    /**
      * Tests that we can decompress valid public keys
      * @throws AssertFailException
      */
@@ -392,6 +409,7 @@ public class NativeSecp256k1Test {
         //Test randomize()
         testRandomize();
 
+        testPubKeyCombine();
         testDecompressPubKey();
 
         testIsValidPubKeyPos();
