@@ -369,6 +369,65 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1p
   return retArray;
 }
 
+SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1ec_1pubkey_1combine
+  (JNIEnv * env, jclass classObject, jobject byteBufferObject, jlong ctx_l, jint publen, jint numkeys, jboolean compressed)
+{
+  secp256k1_context *ctx = (secp256k1_context*)(uintptr_t)ctx_l;
+  unsigned char* pkeys = (*env)->GetDirectBufferAddress(env, byteBufferObject);
+
+  jobjectArray retArray;
+  jbyteArray pubArray, intsByteArray;
+  unsigned char intsarray[2];
+  unsigned char outputSer[65];
+  size_t outputLen = 65;
+  secp256k1_pubkey sumkey;
+  secp256k1_pubkey* pubkeys[numkeys];
+  int ret = 1;
+  size_t i;
+
+  for (i = 0; i < numkeys; i++)
+  {
+    unsigned char* pkey = pkeys + (i*publen);
+
+    ret = secp256k1_ec_pubkey_parse(ctx, pubkeys[i], pkey, publen);
+
+    if ( !ret ) {
+      break;
+    }
+  }
+
+  if ( ret ) {
+    ret = secp256k1_ec_pubkey_combine(ctx, &sumkey, &pubkeys, numkeys);
+  }
+
+  if ( ret ) {
+    int ret2 = secp256k1_ec_pubkey_serialize(ctx, outputSer, &outputLen, &sumkey, compressed ? SECP256K1_EC_COMPRESSED : SECP256K1_EC_UNCOMPRESSED);(void)ret2;
+  }
+  
+  for (i = 0; i < outputLen; i++) {
+    printf("%x", outputSer[i]);
+  }
+
+  intsarray[0] = outputLen;
+  intsarray[1] = ret;
+
+  retArray = (*env)->NewObjectArray(env, 2,
+    (*env)->FindClass(env, "[B"),
+    (*env)->NewByteArray(env, 1));
+
+  pubArray = (*env)->NewByteArray(env, outputLen);
+  (*env)->SetByteArrayRegion(env, pubArray, 0, outputLen, (jbyte*)outputSer);
+  (*env)->SetObjectArrayElement(env, retArray, 0, pubArray);
+
+  intsByteArray = (*env)->NewByteArray(env, 2);
+  (*env)->SetByteArrayRegion(env, intsByteArray, 0, 2, (jbyte*)intsarray);
+  (*env)->SetObjectArrayElement(env, retArray, 1, intsByteArray);
+
+  (void)classObject;
+
+  return retArray;
+}
+
 SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1ec_1pubkey_1decompress
   (JNIEnv* env, jclass classObject, jobject byteBufferObject, jlong ctx_l, jint publen)
 {
