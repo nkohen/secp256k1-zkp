@@ -369,14 +369,6 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1p
   return retArray;
 }
 
-SECP256K1_API jlong JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1ecdsa_1pubkey_1combine
-  (JNIEnv * env, jclass classObject, jobject byteBufferObject, jlong ctx_l, jint numkeys)
-{
-  (void)classObject;(void)env;(void)byteBufferObject;(void)ctx_l;(void)numkeys;
-
-  return 0;
-}
-
 SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1ec_1pubkey_1decompress
   (JNIEnv* env, jclass classObject, jobject byteBufferObject, jlong ctx_l, jint publen)
 {
@@ -548,7 +540,7 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1s
 
   return retArray;
 }
-
+/*
 SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1schnorrsig_1compute_1sigpoint
   (JNIEnv* env, jclass classObject, jobject byteBufferObject, jlong ctx_l, jboolean compressed)
 {
@@ -599,7 +591,7 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1s
 
   return retArray;
 }
-
+*/
 SECP256K1_API jint JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1schnorrsig_1verify
   (JNIEnv* env, jclass classObject, jobject byteBufferObject, jlong ctx_l)
 {
@@ -633,38 +625,34 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1e
   unsigned char* seckey32 = (unsigned char*) (*env)->GetDirectBufferAddress(env, byteBufferObject);
   unsigned char* adaptor = (unsigned char*) (seckey32 + 32);
   unsigned char* msg32 = (unsigned char*) (adaptor + publen);
+  unsigned char* rand32 = (unsigned char*) (msg32 + 32);
 
   jobjectArray retArray;
   jbyteArray sigArray, proofArray, intsByteArray;
 
   unsigned char intsarray[1];
-  unsigned char adaptor_sig65[65];
-  unsigned char adaptor_proof97[97];
+  unsigned char adaptor_sig162[162];
 
   secp256k1_pubkey adaptorPoint;
   int ret = secp256k1_ec_pubkey_parse(ctx, &adaptorPoint, adaptor, publen);
 
   if (ret) {
-    ret = secp256k1_ecdsa_adaptor_sign(ctx, adaptor_sig65, adaptor_proof97, seckey32, &adaptorPoint, msg32);
+    ret = secp256k1_ecdsa_adaptor_encrypt(ctx, adaptor_sig162, seckey32, &adaptorPoint, msg32, NULL, rand32);
   }
 
   intsarray[0] = ret;
 
-  retArray = (*env)->NewObjectArray(env, 3,
+  retArray = (*env)->NewObjectArray(env, 2,
     (*env)->FindClass(env, "[B"),
     (*env)->NewByteArray(env, 1));
 
-  sigArray = (*env)->NewByteArray(env, 65);
-  (*env)->SetByteArrayRegion(env, sigArray, 0, 65, (jbyte*)adaptor_sig65);
+  sigArray = (*env)->NewByteArray(env, 162);
+  (*env)->SetByteArrayRegion(env, sigArray, 0, 162, (jbyte*)adaptor_sig162);
   (*env)->SetObjectArrayElement(env, retArray, 0, sigArray);
-
-  proofArray = (*env)->NewByteArray(env, 97);
-  (*env)->SetByteArrayRegion(env, proofArray, 0, 97, (jbyte*)adaptor_proof97);
-  (*env)->SetObjectArrayElement(env, retArray, 1, proofArray);
 
   intsByteArray = (*env)->NewByteArray(env, 1);
   (*env)->SetByteArrayRegion(env, intsByteArray, 0, 1, (jbyte*)intsarray);
-  (*env)->SetObjectArrayElement(env, retArray, 2, intsByteArray);
+  (*env)->SetObjectArrayElement(env, retArray, 1, intsByteArray);
 
   (void)classObject;
 
@@ -680,11 +668,10 @@ SECP256K1_API jint JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1ecdsa_1ad
   (JNIEnv *env, jclass classObject, jobject byteBufferObject, jlong ctx_l, jint publen)
 {
   secp256k1_context *ctx = (secp256k1_context*)(uintptr_t)ctx_l;
-  unsigned char* adaptor_sig65 = (unsigned char*) (*env)->GetDirectBufferAddress(env, byteBufferObject);
-  unsigned char* pkey = (unsigned char*) (adaptor_sig65 + 65);
+  unsigned char* adaptor_sig162 = (unsigned char*) (*env)->GetDirectBufferAddress(env, byteBufferObject);
+  unsigned char* pkey = (unsigned char*) (adaptor_sig162 + 162);
   unsigned char* msg32 = (unsigned char*) (pkey + publen);
   unsigned char* adaptor = (unsigned char*) (msg32 + 32);
-  unsigned char* adaptor_proof97 = (unsigned char*) (adaptor + publen);
 
   secp256k1_pubkey pubKey;
   secp256k1_pubkey adaptorPoint;
@@ -696,7 +683,7 @@ SECP256K1_API jint JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1ecdsa_1ad
   (void)classObject;
 
   if (ret) {
-    ret = secp256k1_ecdsa_adaptor_sig_verify(ctx, adaptor_sig65, &pubKey, msg32, &adaptorPoint, adaptor_proof97);
+    ret = secp256k1_ecdsa_adaptor_verify(ctx, adaptor_sig162, &pubKey, msg32, &adaptorPoint);
   }
 
   return ret;
@@ -712,7 +699,7 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1e
 {
   secp256k1_context *ctx = (secp256k1_context*)(uintptr_t)ctx_l;
   unsigned char *adaptor_secret32 = (unsigned char*) (*env)->GetDirectBufferAddress(env, byteBufferObject);
-  unsigned char *adaptor_sig65 = (unsigned char*) (adaptor_secret32 + 32);
+  unsigned char *adaptor_sig162 = (unsigned char*) (adaptor_secret32 + 32);
 
   jobjectArray retArray;
   jbyteArray sigArray, intsByteArray;
@@ -720,7 +707,7 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1e
   unsigned char intsarray[2];
   secp256k1_ecdsa_signature sig;
 
-  int ret = secp256k1_ecdsa_adaptor_adapt(ctx, &sig, adaptor_secret32, adaptor_sig65);
+  int ret = secp256k1_ecdsa_adaptor_decrypt(ctx, &sig, adaptor_secret32, adaptor_sig162);
 
   unsigned char outputSer[72];
   size_t outputLen = 72;
@@ -759,8 +746,8 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1e
 {
   secp256k1_context *ctx = (secp256k1_context*)(uintptr_t)ctx_l;
   unsigned char *sig_bytes = (unsigned char*) (*env)->GetDirectBufferAddress(env, byteBufferObject);
-  unsigned char *adaptor_sig65 = (unsigned char*) (sig_bytes + siglen);
-  unsigned char *adaptor = (unsigned char*) (adaptor_sig65 + 65);
+  unsigned char *adaptor_sig162 = (unsigned char*) (sig_bytes + siglen);
+  unsigned char *adaptor = (unsigned char*) (adaptor_sig162 + 162);
 
   jobjectArray retArray;
   jbyteArray secArray, intsByteArray;
@@ -776,7 +763,7 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1e
   }
 
   if (ret) {
-    ret = secp256k1_ecdsa_adaptor_extract_secret(ctx, adaptor_secret32, &sig, adaptor_sig65, &adaptorPoint);
+    ret = secp256k1_ecdsa_adaptor_recover(ctx, adaptor_secret32, &sig, adaptor_sig162, &adaptorPoint);
   }
 
   intsarray[0] = ret;

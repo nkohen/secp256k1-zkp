@@ -140,9 +140,9 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1s
  * Class:     org_bitcoin_NativeSecp256k1
  * Method:    secp256k1_ecdsa_sign
  * Signature: (Ljava/nio/ByteBuffer;JI)[[B
- */
 SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1schnorrsig_1compute_1sigpoint
   (JNIEnv *, jclass, jobject, jlong, jboolean);
+*/
 
 /*
  * Class:     org_bitcoin_NativeSecp256k1

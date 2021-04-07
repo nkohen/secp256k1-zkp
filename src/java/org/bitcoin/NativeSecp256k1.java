@@ -649,14 +649,15 @@ public class NativeSecp256k1 {
         }
     }
 
-    public static byte[] adaptorSign(byte[] seckey, byte[] adaptorPoint, byte[] data) throws AssertFailException{
+    public static byte[] adaptorSign(byte[] seckey, byte[] adaptorPoint, byte[] data, byte[] auxRand) throws AssertFailException{
         checkArgument(seckey.length == 32 &&
                 data.length == 32 &&
-                (adaptorPoint.length == 33 || adaptorPoint.length == 65));
+                (adaptorPoint.length == 33 || adaptorPoint.length == 65) &&
+                auxRand.length == 32);
 
         ByteBuffer byteBuff = nativeECDSABuffer.get();
-        if (byteBuff == null || byteBuff.capacity() < 32 + 32 + adaptorPoint.length) {
-            byteBuff = ByteBuffer.allocateDirect(32 + 32 + adaptorPoint.length);
+        if (byteBuff == null || byteBuff.capacity() < 32 + 32 + adaptorPoint.length + 32) {
+            byteBuff = ByteBuffer.allocateDirect(32 + 32 + adaptorPoint.length + 32);
             byteBuff.order(ByteOrder.nativeOrder());
             nativeECDSABuffer.set(byteBuff);
         }
@@ -664,6 +665,7 @@ public class NativeSecp256k1 {
         byteBuff.put(seckey);
         byteBuff.put(adaptorPoint);
         byteBuff.put(data);
+        byteBuff.put(auxRand);
 
         byte[][] retByteArray;
 
@@ -675,28 +677,23 @@ public class NativeSecp256k1 {
         }
 
         byte[] sigArr = retByteArray[0];
-        byte[] proofArr = retByteArray[1];
-        int retVal = new BigInteger(new byte[] { retByteArray[2][0] }).intValue();
+        int retVal = new BigInteger(new byte[] { retByteArray[1][0] }).intValue();
 
         if (retVal == 0) {
             return new byte[]{};
         } else {
-            byte[] resArray = new byte[sigArr.length + proofArr.length];
-            System.arraycopy(sigArr, 0, resArray, 0, sigArr.length);
-            System.arraycopy(proofArr, 0, resArray, sigArr.length, proofArr.length);
-            return resArray;
+            return sigArr;
         }
     }
 
-    public static boolean adaptorVerify(byte[] adaptorSig, byte[] pubKey, byte[] data, byte[] adaptorPoint, byte[] adaptorProof) throws AssertFailException{
+    public static boolean adaptorVerify(byte[] adaptorSig, byte[] pubKey, byte[] data, byte[] adaptorPoint) throws AssertFailException{
         checkArgument(data.length == 32 &&
-                adaptorSig.length == 65 &&
+                adaptorSig.length == 162 &&
                 (pubKey.length == 33 || pubKey.length == 65) &&
-                adaptorPoint.length == pubKey.length &&
-                adaptorProof.length == 97);
+                adaptorPoint.length == pubKey.length);
 
         ByteBuffer byteBuff = nativeECDSABuffer.get();
-        int buffLen = 32 + 65 + pubKey.length + adaptorPoint.length + 97;
+        int buffLen = 32 + 162 + pubKey.length + adaptorPoint.length;
         if (byteBuff == null || byteBuff.capacity() < buffLen) {
             byteBuff = ByteBuffer.allocateDirect(buffLen);
             byteBuff.order(ByteOrder.nativeOrder());
@@ -707,7 +704,6 @@ public class NativeSecp256k1 {
         byteBuff.put(pubKey);
         byteBuff.put(data);
         byteBuff.put(adaptorPoint);
-        byteBuff.put(adaptorProof);
 
         r.lock();
         try {
@@ -718,11 +714,11 @@ public class NativeSecp256k1 {
     }
 
     public static byte[] adaptorAdapt(byte[] adaptorSec, byte[] adaptorSig) throws AssertFailException{
-        checkArgument(adaptorSec.length == 32 && adaptorSig.length == 65);
+        checkArgument(adaptorSec.length == 32 && adaptorSig.length == 162);
 
         ByteBuffer byteBuff = nativeECDSABuffer.get();
-        if (byteBuff == null || byteBuff.capacity() < 32 + 65) {
-            byteBuff = ByteBuffer.allocateDirect(32 + 65);
+        if (byteBuff == null || byteBuff.capacity() < 32 + 162) {
+            byteBuff = ByteBuffer.allocateDirect(32 + 162);
             byteBuff.order(ByteOrder.nativeOrder());
             nativeECDSABuffer.set(byteBuff);
         }
@@ -749,11 +745,11 @@ public class NativeSecp256k1 {
     }
 
     public static byte[] adaptorExtractSecret(byte[] sig, byte[] adaptorSig, byte[] adaptor) throws AssertFailException{
-        checkArgument(sig.length <= 520 && (adaptor.length == 33 || adaptor.length == 65) && adaptorSig.length == 65);
+        checkArgument(sig.length <= 520 && (adaptor.length == 33 || adaptor.length == 65) && adaptorSig.length == 162);
 
         ByteBuffer byteBuff = nativeECDSABuffer.get();
-        if (byteBuff == null || byteBuff.capacity() < sig.length + adaptor.length + 65) {
-            byteBuff = ByteBuffer.allocateDirect(sig.length + adaptor.length + 65);
+        if (byteBuff == null || byteBuff.capacity() < sig.length + adaptor.length + 162) {
+            byteBuff = ByteBuffer.allocateDirect(sig.length + adaptor.length + 162);
             byteBuff.order(ByteOrder.nativeOrder());
             nativeECDSABuffer.set(byteBuff);
         }
