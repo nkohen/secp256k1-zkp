@@ -198,11 +198,11 @@ public class NativeSecp256k1Test {
         byte[] pub3 = toByteArray("02BF0298EAFAE04E45789BC5C3419BF718AFDBC7951EDEB1BFE4073CEE06B40C20");
         byte[][] pubs = { pub1, pub2, pub3 };
         
-        //byte[] resultArr = NativeSecp256k1.pubKeyCombine( pubs , false);
-        //String pubkeyString = toHex(resultArr);
+        byte[] resultArr = NativeSecp256k1.pubKeyCombine( pubs , false);
+        String pubkeyString = toHex(resultArr);
         byte[] resultArrCompressed = NativeSecp256k1.pubKeyCombine( pubs , true);
         String pubkeyStringCompressed = toHex(resultArrCompressed);
-        //assertEquals(pubkeyString , "0436456D9DB1ACC4B3DB73CA77AA760D6BF7163A7432A3B1F189FB5C4EC2344A622DBB33694B9F067C48F09ED860AD68D12E5355B08157C985E11AA016944B3E7E" , "testPubKeyCombine");
+        assertEquals(pubkeyString , "0436456D9DB1ACC4B3DB73CA77AA760D6BF7163A7432A3B1F189FB5C4EC2344A622DBB33694B9F067C48F09ED860AD68D12E5355B08157C985E11AA016944B3E7E" , "testPubKeyCombine");
         assertEquals(pubkeyStringCompressed , "0236456D9DB1ACC4B3DB73CA77AA760D6BF7163A7432A3B1F189FB5C4EC2344A62" , "testPubKeyCombine (compressed)");
     }
 
@@ -311,7 +311,7 @@ public class NativeSecp256k1Test {
         assertEquals(adaptorSig, expectedAdaptorSig, "testAdaptorSign");
     }
 
-    public static void testAdaptorVeirfy() throws AssertFailException {
+    public static void testAdaptorVerify() throws AssertFailException {
         byte[] msg = toByteArray("8131E6F4B45754F2C90BD06688CEEABC0C45055460729928B4EECF11026A9E2D");
         byte[] adaptorSig = toByteArray("03424D14A5471C048AB87B3B83F6085D125D5864249AE4297A57C84E74710BB6730223F325042FCE535D040FEE52EC13231BF709CCD84233C6944B90317E62528B2527DFF9D659A96DB4C99F9750168308633C1867B70F3A18FB0F4539A1AECEDCD1FC0148FC22F36B6303083ECE3F872B18E35D368B3958EFE5FB081F7716736CCB598D269AA3084D57E1855E1EA9A45EFC10463BBF32AE378029F5763CEB40173F");
         byte[] adaptor = toByteArray("02C2662C97488B07B6E819124B8989849206334A4C2FBDF691F7B34D2B16E9C293");
@@ -428,7 +428,7 @@ public class NativeSecp256k1Test {
         testAdaptorSign();
 
         //Test adaptor signature verification
-        testAdaptorVeirfy();
+        testAdaptorVerify();
 
         //Test adaptor completion
         testAdaptorAdapt();
