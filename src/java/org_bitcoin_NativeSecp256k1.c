@@ -687,7 +687,7 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1e
   unsigned char* rand32 = (unsigned char*) (msg32 + 32);
 
   jobjectArray retArray;
-  jbyteArray sigArray, proofArray, intsByteArray;
+  jbyteArray sigArray, intsByteArray;
 
   unsigned char intsarray[1];
   unsigned char adaptor_sig162[162];
