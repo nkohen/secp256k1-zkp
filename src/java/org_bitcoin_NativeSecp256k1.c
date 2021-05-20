@@ -428,6 +428,81 @@ SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1e
   return retArray;
 }
 
+SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1ec_1pubkey_1combine_1memoized
+  (JNIEnv * env, jclass classObject, jobject byteBufferObject, jlong ctx_l, jint publen, jint jnumkeys, jboolean compressed)
+{
+  secp256k1_context *ctx = (secp256k1_context*)(uintptr_t)ctx_l;
+  unsigned char* pkeys = (*env)->GetDirectBufferAddress(env, byteBufferObject);
+
+  const size_t numkeys = jnumkeys;
+  secp256k1_pubkey sumkeys[numkeys];
+  secp256k1_pubkey pubkeys[numkeys];
+  int ret = 1;
+  size_t i;
+
+  jobjectArray retArray;
+  jbyteArray pubArray, intsByteArray;
+  unsigned char intsarray[2];
+  unsigned char outputSer[numkeys][65];
+  size_t outputLen = 65;
+
+  for (i = 0; i < numkeys; i++)
+  {
+    unsigned char* pkey = pkeys + (i*publen);
+    
+    ret = secp256k1_ec_pubkey_parse(ctx, &pubkeys[i], pkey, publen);
+
+    if ( !ret ) {
+      break;
+    }
+  }
+
+  if ( ret ) {
+    sumkeys[0] = pubkeys[0];
+    for (i = 1; i < numkeys; i++)
+    {
+      const secp256k1_pubkey *keystoadd[2];
+      keystoadd[0] = &sumkeys[i-1];
+      keystoadd[1] = &pubkeys[i];
+
+      ret = secp256k1_ec_pubkey_combine(ctx, &sumkeys[i], keystoadd, 2);
+
+      if ( !ret ) {
+        break;
+      }
+    }
+  }
+
+  if ( ret ) {
+    for (i = 0; i < numkeys; i++)
+    {
+      int ret2 = secp256k1_ec_pubkey_serialize(ctx, outputSer[i], &outputLen, &sumkeys[i], compressed ? SECP256K1_EC_COMPRESSED : SECP256K1_EC_UNCOMPRESSED);(void)ret2;
+    }
+  }
+
+  intsarray[0] = outputLen;
+  intsarray[1] = ret;
+
+  retArray = (*env)->NewObjectArray(env, numkeys + 1,
+    (*env)->FindClass(env, "[B"),
+    (*env)->NewByteArray(env, 1));
+
+  intsByteArray = (*env)->NewByteArray(env, 2);
+  (*env)->SetByteArrayRegion(env, intsByteArray, 0, 2, (jbyte*)intsarray);
+  (*env)->SetObjectArrayElement(env, retArray, 0, intsByteArray);
+
+  for (i = 0; i < numkeys; i++)
+  {
+    pubArray = (*env)->NewByteArray(env, outputLen);
+    (*env)->SetByteArrayRegion(env, pubArray, 0, outputLen, (jbyte*)outputSer[i]);
+    (*env)->SetObjectArrayElement(env, retArray, i + 1, pubArray);
+  }
+
+  (void)classObject;
+
+  return retArray;
+}
+
 SECP256K1_API jobjectArray JNICALL Java_org_bitcoin_NativeSecp256k1_secp256k1_1ec_1pubkey_1decompress
   (JNIEnv* env, jclass classObject, jobject byteBufferObject, jlong ctx_l, jint publen)
 {
