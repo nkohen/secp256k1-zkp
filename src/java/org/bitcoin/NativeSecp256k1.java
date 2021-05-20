@@ -735,6 +735,56 @@ public class NativeSecp256k1 {
         }
     }
 
+    public static byte[][] adaptorSignBatch(byte[][] secKey, byte[][] adaptorPoint, byte[][] data, byte[][] auxRand) throws AssertFailException {
+        int numSigs = secKey.length;
+        checkArgument(adaptorPoint.length == numSigs && data.length == numSigs && auxRand.length == numSigs);
+
+        int pubLen = adaptorPoint[0].length;
+        checkArgument(pubLen == 33 || pubLen == 65);
+
+        for (int i = 0; i < numSigs; i++) {
+            checkArgument(secKey[i].length == 32 &&
+                    data[i].length == 32 &&
+                    adaptorPoint[i].length == pubLen &&
+                    auxRand[i].length == 32);
+        }
+
+        ByteBuffer byteBuff = nativeECDSABuffer.get();
+        if (byteBuff == null || byteBuff.capacity() < (32 + 32 + pubLen + 32) * numSigs) {
+            byteBuff = ByteBuffer.allocateDirect((32 + 32 + pubLen + 32) * numSigs);
+            byteBuff.order(ByteOrder.nativeOrder());
+            nativeECDSABuffer.set(byteBuff);
+        }
+        byteBuff.rewind();
+        for (int i = 0; i < numSigs; i++) {
+            byteBuff.put(secKey[i]);
+            byteBuff.put(adaptorPoint[i]);
+            byteBuff.put(data[i]);
+            byteBuff.put(auxRand[i]);
+        }
+
+        byte[][] retByteArray;
+
+        r.lock();
+        try {
+            retByteArray = secp256k1_ecdsa_adaptor_sign_batch(byteBuff, Secp256k1Context.getContext(), pubLen, numSigs);
+        } finally {
+            r.unlock();
+        }
+
+        int retVal = new BigInteger(new byte[] { retByteArray[0][0] }).intValue();
+
+        assertEquals(retVal, 1, "Failed return value check.");
+
+        byte[][] sigArr = new byte[numSigs][162];
+
+        for (int i = 0; i < numSigs; i++) {
+            sigArr[i] = retByteArray[i+1];
+        }
+
+        return sigArr;
+    }
+
     public static boolean adaptorVerify(byte[] adaptorSig, byte[] pubKey, byte[] data, byte[] adaptorPoint) throws AssertFailException{
         checkArgument(data.length == 32 &&
                 adaptorSig.length == 162 &&
@@ -899,6 +949,8 @@ public class NativeSecp256k1 {
     private static native int secp256k1_schnorrsig_verify(ByteBuffer byteBuffer, long context);
 
     private static native byte[][] secp256k1_ecdsa_adaptor_sign(ByteBuffer byteBuff, long context, int adaptorLen);
+
+    private static native byte[][] secp256k1_ecdsa_adaptor_sign_batch(ByteBuffer byteBuff, long context, int adaptorLen, int numSigs);
 
     private static native int secp256k1_ecdsa_adaptor_sig_verify(ByteBuffer byteBuff, long context, int pubKeyLen);
 
